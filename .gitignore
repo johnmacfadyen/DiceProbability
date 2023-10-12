@@ -1,0 +1,12 @@
+# Ignore build and dist directories
+build/
+dist/
+
+# Ignore venv
+venv/
+
+# Ignore env files
+.env
+
+# Ignore spec files
+*.spec
