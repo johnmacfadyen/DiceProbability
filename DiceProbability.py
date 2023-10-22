@@ -2,7 +2,7 @@
 # PyQt6 GUI application to display the results.
 
 # Importing the required libraries
-import sys
+import sys, os
 from PyQt6.QtWidgets import QApplication, QWidget, QFormLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QSpinBox, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui import QIcon
 import pyqtgraph as pg
@@ -11,6 +11,15 @@ import numpy as np
 
 # Configure PyQTGraph settings
 x_axis_labels = ['Win', 'Partial Win', 'Loss'] # X-axis labels for the bar graph
+
+# Configure Resource Path for PyInstaller
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # Function to calculate the cumulative probabilities
 def cumulative_probabilities(dice_sides, target_number, max_rolls=10, cache={}):
@@ -67,7 +76,7 @@ class App(QWidget):
         
         self.init_ui()                                          # Calling the init_ui function
         self.setWindowTitle(self.title)                         # Setting the window title
-        self.setWindowIcon(QIcon("dice.png"))                   # Setting the window icon
+        self.setWindowIcon(QIcon(resource_path("dice.png")))                   # Setting the window icon
         self.setGeometry(self.left, self.top, 400, 300)         # Setting the window geometry
         self.graph_widget = None
         self.show()
