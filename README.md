@@ -3,6 +3,8 @@
 This is a Python application that calculates the probability of rolling a certain number on a dice using the cumulative distribution function. It also includes a PyQt6 GUI application to display the results.
 Built as a coding challenge from [RobertHartleyGM](https://roberthartleygm.com/) in his discord server for a D&D casino game to help determine payout. 
 
+Logo from [freepngimg](https://freepngimg.com/download/dice/90810-and-dice-d20-dungeons-system-dragons-black.png)
+
 ## Installation
 
 To use this application, you will need to have Python 3 installed on your computer. You can download Python from the official website: <https://www.python.org/downloads/>
