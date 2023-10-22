@@ -9,7 +9,8 @@ import pyqtgraph as pg
 from pyqtgraph import AxisItem
 import numpy as np
 
-x = ['Win', 'Partial Win', 'Loss'] # X-axis labels for the bar graph
+# Configure PyQTGraph settings
+x_axis_labels = ['Win', 'Partial Win', 'Loss'] # X-axis labels for the bar graph
 
 # Function to calculate the cumulative probabilities
 def cumulative_probabilities(dice_sides, target_number, max_rolls=10, cache={}):
@@ -18,28 +19,28 @@ def cumulative_probabilities(dice_sides, target_number, max_rolls=10, cache={}):
         return cache[(max_rolls, target_number)]
 
     # Initialize the probability array
-    dp = [[0] * (target_number + 1) for _ in range(max_rolls + 1)]
+    probabilities = [[0] * (target_number + 1) for _ in range(max_rolls + 1)]
 
     # Base case: after 1 roll
     for i in range(1, dice_sides + 1):
         if i <= target_number:
-            dp[1][i] = 1 / dice_sides
+            probabilities[1][i] = 1 / dice_sides
 
     # Dynamic programming: compute probabilities for 2 to max_rolls rolls
     for roll in range(2, max_rolls + 1):
         for total in range(1, target_number + 1):
             for face in range(1, dice_sides + 1):
                 if total - face > 0:
-                    dp[roll][total] += dp[roll - 1][total - face] / dice_sides
+                    probabilities[roll][total] += probabilities[roll - 1][total - face] / dice_sides
 
     # Sum the probabilities for achieving the target in up to max_rolls
-    win_probability = sum(dp[roll][target_number] for roll in range(1, max_rolls + 1))
+    win_probability = sum(probabilities[roll][target_number] for roll in range(1, max_rolls + 1))
     partial_win_probability = 0
     for roll in range(1, max_rolls + 1):
-        if 0 < target_number - 1 < len(dp[roll]):
-            partial_win_probability += dp[roll][target_number - 1]
-        if 0 < target_number + 1 <= dice_sides and target_number + 1 < len(dp[roll]): 
-            partial_win_probability += dp[roll][target_number + 1]
+        if 0 < target_number - 1 < len(probabilities[roll]):
+            partial_win_probability += probabilities[roll][target_number - 1]
+        if 0 < target_number + 1 <= dice_sides and target_number + 1 < len(probabilities[roll]): 
+            partial_win_probability += probabilities[roll][target_number + 1]
 
     # Store the probability in the cache
     cache[(max_rolls, target_number)] = (win_probability, partial_win_probability)
@@ -141,17 +142,19 @@ class App(QWidget):
     # Calculate Probabilities
     def on_calculate(self):
         dice_sides = int(self.dice_combo.currentText()[1:])
-        if not self.target_input.text().strip():
-            print("Error: Please enter a target number.")
+        target_text = self.target_input.text().strip()
+        max_rolls = self.rolls_spinbox.value()
+        
+        # Check if the target number contains a valid integer
+        try:
+            target_number = int(target_text)
+        except ValueError:
             error_dialog = QMessageBox(self)
             error_dialog.setIcon(QMessageBox.Icon.Critical)
-            error_dialog.setText("Error: Please enter a target number.")
+            error_dialog.setText(f"Error: Please enter a valid integer for the target number.")
             error_dialog.setWindowTitle("Error")
             error_dialog.exec()
             return
-
-        target_number = int(self.target_input.text())
-        max_rolls = self.rolls_spinbox.value()
         
         # Check if the target number is out of bounds
         if target_number > dice_sides * max_rolls or target_number < dice_sides:
@@ -182,8 +185,25 @@ class App(QWidget):
             bet = float(self.bet_input.text())
             
         # Retrieve payout ratios from the input fields
-        win_payout_ratio = float(self.win_payout_input.text())
-        partial_win_payout_ratio = float(self.partial_win_payout_input.text())
+        try:
+            win_payout_ratio = float(self.win_payout_input.text())
+        except ValueError:
+            error_dialog = QMessageBox(self)
+            error_dialog.setIcon(QMessageBox.Icon.Critical)
+            error_dialog.setText(f"Error: Please enter a valid payout ratio for the win.")
+            error_dialog.setWindowTitle("Error")
+            error_dialog.exec()
+            return
+        
+        try:
+            partial_win_payout_ratio = float(self.partial_win_payout_input.text())
+        except ValueError:
+            error_dialog = QMessageBox(self)
+            error_dialog.setIcon(QMessageBox.Icon.Critical)
+            error_dialog.setText(f"Error: Please enter a valid payout ratio for the partial win.")
+            error_dialog.setWindowTitle("Error")
+            error_dialog.exec()
+            return
 
         # Calculate potential payouts
         win_payout = bet + bet * win_payout_ratio
@@ -203,7 +223,7 @@ class App(QWidget):
             self.graph_widget = None
 
         # Creating a PyQtGraph bar graph
-        self.graph_widget = pg.PlotWidget(self, title=f'Probabilities for Target Number on a d{dice_sides}', axisItems={'bottom': StringAxis(strings=x)})
+        self.graph_widget = pg.PlotWidget(self, title=f'Probabilities for Target Number on a d{dice_sides}', axisItems={'bottom': StringAxis(strings=x_axis_labels)})
         self.graph_widget.setMinimumSize(400, 300) # Adjust the size as needed
         self.graph_widget.setYRange(0,1)  # This sets the y-axis to range from 0 to 1
         
