@@ -4,6 +4,7 @@ dist/
 
 # Ignore venv
 venv/
+.venv
 
 # Ignore env files
 .env
