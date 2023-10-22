@@ -12,7 +12,11 @@ import numpy as np
 x = ['Win', 'Partial Win', 'Loss'] # X-axis labels for the bar graph
 
 # Function to calculate the cumulative probabilities
-def cumulative_probabilities(dice_sides, target_number, max_rolls=10):
+def cumulative_probabilities(dice_sides, target_number, max_rolls=10, cache={}):
+    # Check if the probability is already in the cache
+    if (max_rolls, target_number) in cache:
+        return cache[(max_rolls, target_number)]
+
     # Initialize the probability array
     dp = [[0] * (target_number + 1) for _ in range(max_rolls + 1)]
 
@@ -36,6 +40,9 @@ def cumulative_probabilities(dice_sides, target_number, max_rolls=10):
             partial_win_probability += dp[roll][target_number - 1]
         if 0 < target_number + 1 <= dice_sides and target_number + 1 < len(dp[roll]): 
             partial_win_probability += dp[roll][target_number + 1]
+
+    # Store the probability in the cache
+    cache[(max_rolls, target_number)] = (win_probability, partial_win_probability)
 
     return win_probability, partial_win_probability
 
@@ -98,8 +105,8 @@ class App(QWidget):
         self.bet_input = QLineEdit(self)
         self.bet_input.setPlaceholderText("Enter your bet (Default: $100)")
         
-        self.win_payout_label = QLabel("Win Payout:")
-        self.partial_win_payout_label = QLabel("Partial Win Payout:")
+        self.win_payout_label = QLabel("")
+        self.partial_win_payout_label = QLabel("")
         
         # Use addRow for QFormLayout with direct string labels
         form_layout.addRow("Select Dice:", self.dice_combo)
